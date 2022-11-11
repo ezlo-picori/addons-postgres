@@ -9,4 +9,4 @@ configuration:
     name: Rights
     description: This section grant privileges to users in PostgreSQL.
 network:
-  5432/tcp: The port to access the database engine.
+  postgres/tcp: The port to access the database engine.

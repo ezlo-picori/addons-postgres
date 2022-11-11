@@ -1,5 +1,5 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
-version: "0.1.1"
+version: "0.1.2"
 slug: postgres
 name: PostgreSQL
 description: PostgreSQL database
@@ -22,7 +22,7 @@ options:
     - database: homeassistant
       username: homeassistant
 ports:
-  5432/tcp: null
+  postgres/tcp: 5432
 schema:
   databases:
     - str
@@ -36,7 +36,5 @@ schema:
           CREATE VIEW|DELETE|DELETE HISTORY|DROP|EVENT|GRANT OPTION|INDEX|\
           INSERT|LOCK TABLES|SELECT|SHOW VIEW|TRIGGER|UPDATE)?"
       username: str
-services:
-  - postgresql:provide
 startup: system
 timeout: 20
