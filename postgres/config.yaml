@@ -22,7 +22,9 @@ options:
     - database: homeassistant
       username: homeassistant
 ports:
-  postgres/tcp: 5432
+  5432/tcp: 5432
+ports_description:
+  5432/tcp: "The port to access the database engine."
 schema:
   databases:
     - str
