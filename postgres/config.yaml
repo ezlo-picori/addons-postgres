@@ -1,0 +1,42 @@
+# https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
+version: "0.1.0"
+slug: postgres
+name: PostgreSQL
+description: PostgreSQL database
+url: "https://github.com/ezlo-picori/addons-postgres/tree/main/postgres"
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+image: "ghcr.io/ezlo-picori/{arch}-addon-postgres"
+init: false
+options:
+  databases:
+    - homeassistant
+  logins:
+    - password: null
+      username: homeassistant
+  rights:
+    - database: homeassistant
+      username: homeassistant
+ports:
+  5432/tcp: null
+schema:
+  databases:
+    - str
+  logins:
+    - username: str
+      password: password
+  rights:
+    - database: str
+      privileges:
+        - "list(ALTER|CREATE|CREATE ROUTINE|CREATE TEMPORARY TABLES|\
+          CREATE VIEW|DELETE|DELETE HISTORY|DROP|EVENT|GRANT OPTION|INDEX|\
+          INSERT|LOCK TABLES|SELECT|SHOW VIEW|TRIGGER|UPDATE)?"
+      username: str
+services:
+  - postgresql:provide
+startup: system
+timeout: 20
