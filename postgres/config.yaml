@@ -1,5 +1,5 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
-version: "0.1.5"
+version: "0.1.6"
 slug: postgres
 name: PostgreSQL
 description: PostgreSQL database
@@ -10,7 +10,7 @@ arch:
   - aarch64
   - amd64
   - i386
-image: "ghcr.io/ezlo-picori/hassio-addon-postgres-{arch}"
+image: "ghcr.io/ezlo-picori/ha-addon-postgres-{arch}"
 init: false
 options:
   databases:
