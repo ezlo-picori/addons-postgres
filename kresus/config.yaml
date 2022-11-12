@@ -9,7 +9,6 @@ arch:
   - armv7
   - aarch64
   - amd64
-  - i386
 image: "ghcr.io/ezlo-picori/ha-addon-kresus-{arch}"
 init: false
 options:
