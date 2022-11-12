@@ -30,6 +30,8 @@ profile postgres flags=(attach_disconnected,mediate_deleted) {
   /usr/bin/initdb cx -> initdb,
   /usr/bin/psql cx -> psql,
 
+  /sbin/su-exec cx -> suexec,
+
   profile initdb=(attach_disconnected,mediate_deleted) {
     #include <abstractions/base>
 
@@ -49,7 +51,7 @@ profile postgres flags=(attach_disconnected,mediate_deleted) {
     owner @{PROC}/[0-9]*/oom_adj rw,
   }
 
-  /sbin/su-exec {
+  profile suexec=(attach_disconnected,mediate_deleted) {
     #include <abstractions/base>
 
     capability setgid,
