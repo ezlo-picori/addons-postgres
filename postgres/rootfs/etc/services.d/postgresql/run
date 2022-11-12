@@ -89,5 +89,5 @@ function stop_postgres() {
 }
 trap "stop_postgres" SIGTERM SIGHUP
 
-POSTGRES_PID=$(head -n 1 ${POSTGRES_DATA}/postmaster.pid)
-wait "${POSTGRES_PID}"
+# Wait for process to end
+while test -d "/proc/${POSTGRES_PID}" 2> /dev/null; do sleep 1; done
