@@ -4,9 +4,6 @@
 # ==============================================================================
 POSTGRES_DATA=/data/databases
 PRUN="su-exec postgres:postgres"
-bashio::log.info "Current user: $(id)"
-
-bashio::log.info "su-exec test: $(${PRUN} id)"
 
 # Init database
 if ! bashio::fs.directory_exists "${POSTGRES_DATA}"; then

@@ -1,0 +1,35 @@
+# https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
+version: "0.1.0"
+slug: kresus
+name: Kresus
+description: Open source personal accounting management
+url: "https://github.com/ezlo-picori/addons-postgres/tree/main/kresus"
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+image: "ghcr.io/ezlo-picori/ha-addon-kresus-{arch}"
+init: false
+options:
+  postgres_hostname: homeassistant.local
+  postgres_port: 5432
+  postgres_user: kresus
+  postgres_password: null
+  postgres_database: kresus
+  http_basicauth: "kresus:changeme"
+ports:
+  9876/tcp: 9876
+ports_description:
+  9876/tcp: "The port to access kresus web server."
+schema:
+  postgres_hostname: str
+  postgres_port: int
+  postgres_user: str
+  postgres_password: password
+  postgres_database: str
+  http_basicauth: str?
+startup: system
+timeout: 20
+webui: "http://[HOST]:[PORT:9876]/"

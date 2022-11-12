@@ -1,0 +1,84 @@
+#!/usr/bin/with-contenv bashio
+WOOB_DIR="/woob"
+KRESUS_DATA_DIR="/data/kresus_data"
+KRESUS_USER="kresus"
+KRESUS_INI_FILE="/etc/kresus/config.ini"
+KRUN="su-exec ${KRESUS_USER}:${KRESUS_USER}"
+
+# ==============================================================================
+# Pull latest Woob version
+# ==============================================================================
+cd "${WOOB_DIR}"
+
+if ! bashio::fs.directory_exists "${WOOB_DIR}/.git"; then
+    bashio::log.info "Installing woob..."
+    ${KRUN} git clone --depth 1 https://gitlab.com/woob/woob.git .
+    bashio::log.info "Done installing woob."
+else
+    bashio::log.info "Updating woob..."
+    ${KRUN} git pull || bashio::log.warning "Couldn't update; maybe the Woob's server is unreachable?" && bashio::log.info "Done updating woob."
+fi
+
+bashio::log.info "Updating Woob dependencies..."
+${KRUN} python3 ./setup.py requirements > /tmp/requirements.txt
+${KRUN} pip3 install -r /tmp/requirements.txt
+rm -f /tmp/requirements.txt
+bashio::log.info "Done updating Woob dependencies."
+
+
+# ==============================================================================
+# Fixing permissions
+# ==============================================================================
+chown ${KRESUS_USER}:${KRESUS_USER} ${KRESUS_INI_FILE}
+chmod 0400 ${KRESUS_INI_FILE}
+chmod 755 "$(dirname ${KRESUS_INI_FILE})"
+
+# ==============================================================================
+# Set-up environment variables
+# ==============================================================================
+
+# Basic Kresus options
+export PORT=9876
+export HOST=0.0.0.0
+export KRESUS_PYTHON_EXEC=python3
+export KRESUS_WOOB_DIR="${WOOB_DIR}"
+
+# Kresus salt (generated once)
+if ! bashio::fs.file_exists "/data/kresus_salt"; then
+  pwgen 32 1 > /data/kresus_salt
+  chmod 400 /data/kresus_salt
+fi
+KRESUS_SALT="$(cat /data/kresus_salt)"
+export KRESUS_SALT
+
+# Kresus Basic auth
+if bashio::config.has_value 'http_basicauth'; then
+  KRESUS_AUTH="$(bashio::config 'http_basicauth')"
+  export KRESUS_AUTH
+fi
+
+# Kresus database
+export KRESUS_DB_TYPE="postgres"
+
+KRESUS_DB_HOST="$(bashio::config 'postgres_hostname')"
+KRESUS_DB_PORT="$(bashio::config 'postgres_port')"
+KRESUS_DB_USERNAME="$(bashio::config 'postgres_user')"
+KRESUS_DB_PASSWORD="$(bashio::config 'postgres_password')"
+KRESUS_DB_NAME="$(bashio::config 'postgres_database')"
+export KRESUS_DB_HOST KRESUS_DB_PORT KRESUS_DB_USERNAME \
+       KRESUS_DB_PASSWORD KRESUS_DB_NAME
+
+# ==============================================================================
+# Init data directory
+# ==============================================================================
+if ! bashio::fs.directory_exists "${KRESUS_DATA_DIR}"; then
+  mkdir ${KRESUS_DATA_DIR}
+  chown ${KRESUS_USER}:${KRESUS_USER} ${KRESUS_DATA_DIR}
+  chmod 0700 ${KRESUS_DATA_DIR}
+  ${KRUN} kresus create-user
+fi
+
+# ==============================================================================
+# Start Kresus
+# ==============================================================================
+${KRUN} kresus -c ${KRESUS_INI_FILE}
