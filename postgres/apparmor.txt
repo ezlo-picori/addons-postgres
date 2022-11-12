@@ -38,25 +38,25 @@ profile postgres flags=(attach_disconnected,mediate_deleted,complain) {
     # PostgreSQL binaries
     /usr/bin/initdb cx -> initdb,
     /usr/bin/psql cx -> psql,
-
-    profile initdb=(attach_disconnected,mediate_deleted,complain) {
-      #include <abstractions/base>
-
-      /data/databases/** rw,
-    }
-
-    profile psql=(attach_disconnected,mediate_deleted,complain) {
-      #include <abstractions/base>
-      #include <abstractions/nameservice>
-      #include <abstractions/ssl_keys>
-
-      /etc/postgresql/** r,
-      /usr/share/postgresql/** r,
-      /var/lib/postgresql/** rwl,
-      /{,var/}run/postgresql/** rw,
-
-      owner @{PROC}/[0-9]*/oom_adj rw,
-    }
-
   }
+
+  profile initdb=(attach_disconnected,mediate_deleted,complain) {
+    #include <abstractions/base>
+
+    /data/databases/** rw,
+  }
+
+  profile psql=(attach_disconnected,mediate_deleted,complain) {
+    #include <abstractions/base>
+    #include <abstractions/nameservice>
+    #include <abstractions/ssl_keys>
+
+    /etc/postgresql/** r,
+    /usr/share/postgresql/** r,
+    /var/lib/postgresql/** rwl,
+    /{,var/}run/postgresql/** rw,
+
+    owner @{PROC}/[0-9]*/oom_adj rw,
+  }
+
 }
