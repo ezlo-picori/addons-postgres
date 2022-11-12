@@ -9,7 +9,6 @@ RUN apk add --no-cache \
     npm install --production -g kresus@0.18.1 && \
     pip install --upgrade setuptools && \
     pip install wheel && \
-    pip install simplejson BeautifulSoup4 PyExecJS typing-extensions pdfminer.six Pillow && \
     addgroup kresus && \
     adduser -G kresus -D -h /home/kresus kresus && \
     mkdir -p /woob && \
