@@ -4,33 +4,32 @@
 # ==============================================================================
 POSTGRES_DATA=/data/databases
 
-function run_as() { cat - | su - postgres; }
-
 bashio::log.info "Current user: $(id)"
-bashio::log.info "run_as user: $(echo 'id' | run_as )"
+
+su - postgres << EOC
+
+bashio::log.info "su user: $(id)"
 
 # Init database
 if ! bashio::fs.directory_exists "${POSTGRES_DATA}"; then
     bashio::log.info "Create a new postgres initial system"
-    run_as << COMMANDS
     initdb \
       --data-checksums \
       -D ${POSTGRES_DATA} > /dev/null
     echo "host all all 0.0.0.0/0 scram-sha-256" >> ${POSTGRES_DATA}/pg_hba.conf
     echo "list_addresses='*'" >> ${POSTGRES_DATA}/postgresql.conf
-COMMANDS
 else
     bashio::log.info "Using existing postgres initial system"
     bashio::log.info "Checking data integrity"
-    echo "pg_checksums -D ${POSTGRES_DATA} --check" | run_as
+    pg_checksums -D ${POSTGRES_DATA} --check
 fi
 
 # Start PostgreSQL
 bashio::log.info "Starting PostgreSQL"
-echo "pg_ctl start -D ${POSTGRES_DATA}" | run_as
+pg_ctl start -D ${POSTGRES_DATA}
 
 # Wait until DB is running
-while ! echo "psql -c ''" | run_as 2> /dev/null; do
+while ! psql -c '' 2> /dev/null; do
   sleep 1
 done
 
@@ -40,11 +39,11 @@ POSTGRES_PID=$(head -n 1 ${POSTGRES_DATA}/postmaster.pid)
 # Init databases
 bashio::log.info "Ensure databases exists"
 for database in $(bashio::config "databases"); do
-    if echo "psql ${database} -c ''" | run_as &> /dev/null; then
+    if psql ${database} -c '' &> /dev/null; then
       bashio::log.info "Database ${database} already defined"
     else
       bashio::log.info "Create database ${database}"
-      echo "psql -c 'CREATE DATABASE ${database};'" | run_as 2> /dev/null || true
+      psql -c 'CREATE DATABASE ${database};' 2> /dev/null || true
     fi
 done
 
@@ -54,11 +53,11 @@ for login in $(bashio::config "logins|keys"); do
     USERNAME=$(bashio::config "logins[${login}].username")
     PASSWORD=$(bashio::config "logins[${login}].password")
 
-    if echo "psql -c \"SET PASSWORD FOR '${USERNAME}'@'%' = PASSWORD('${PASSWORD}');\"" | run_as 2> /dev/null; then
+    if psql -c "SET PASSWORD FOR '${USERNAME}'@'%' = PASSWORD('${PASSWORD}');" 2> /dev/null; then
         bashio::log.info "Update user ${USERNAME}"
     else
         bashio::log.info "Create user ${USERNAME}"
-        echo "psql -c \"CREATE USER '${USERNAME}'@'%' IDENTIFIED BY '${PASSWORD}';\"" | run_as 2> /dev/null || true
+        psql -c "CREATE USER '${USERNAME}'@'%' IDENTIFIED BY '${PASSWORD}';" 2> /dev/null || true
     fi
 done
 
@@ -71,24 +70,26 @@ for right in $(bashio::config "rights|keys"); do
     if bashio::config.exists "rights[${right}].privileges"; then
         PRIVILEGES=$(bashio::config "rights[${right}].privileges")
         bashio::log.info "Granting ${PRIVILEGES} to ${USERNAME} on ${DATABASE}"
-        echo "psql -c \"REVOKE ALL PRIVILEGES ON ${DATABASE}.* FROM '${USERNAME}'@'%';\"" | run_as || true
-        echo "psql -c \"GRANT ${PRIVILEGES} ON ${DATABASE}.* TO '${USERNAME}'@'%';\"" | run_as || true
+        psql -c "REVOKE ALL PRIVILEGES ON ${DATABASE}.* FROM '${USERNAME}'@'%';" || true
+        psql -c "GRANT ${PRIVILEGES} ON ${DATABASE}.* TO '${USERNAME}'@'%';" || true
     else
         bashio::log.info "Granting all privileges to ${USERNAME} on ${DATABASE}"
-        echo "psql -c \"GRANT ALL PRIVILEGES ON ${DATABASE}.* TO '${USERNAME}'@'%';\"" | run_as 2> /dev/null || true
+        psql -c "GRANT ALL PRIVILEGES ON ${DATABASE}.* TO '${USERNAME}'@'%';" 2> /dev/null || true
     fi
 done
 
 # Flush privileges
-echo "psql -c \"FLUSH PRIVILEGES;\"" | run_as 2> /dev/null || true
+psql -c "FLUSH PRIVILEGES;" 2> /dev/null || true
+
+EOC
 
 # Register stop
 function stop_postgres() {
-    bashio::services.delete "postgresql"
-    echo "pg_ctl stop -D ${POSTGRES_DATA}" | run_as
+    su - postgres -c "pg_ctl stop -D ${POSTGRES_DATA}"
     # Successful exit, avoid wait exit status to propagate
     exit 0
 }
 trap "stop_postgres" SIGTERM SIGHUP
 
+POSTGRES_PID=$(head -n 1 ${POSTGRES_DATA}/postmaster.pid)
 wait "${POSTGRES_PID}"
