@@ -75,7 +75,6 @@ if ! bashio::fs.directory_exists "${KRESUS_DATA_DIR}"; then
   mkdir ${KRESUS_DATA_DIR}
   chown ${KRESUS_USER}:${KRESUS_USER} ${KRESUS_DATA_DIR}
   chmod 0700 ${KRESUS_DATA_DIR}
-  ${KRUN} kresus create-user
 fi
 
 # ==============================================================================
