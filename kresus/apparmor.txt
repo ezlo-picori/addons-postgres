@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-profile postgres flags=(attach_disconnected,mediate_deleted,complain) {
+profile kresus flags=(attach_disconnected,mediate_deleted,complain) {
   #include <abstractions/base>
 
   # Capabilities
@@ -19,9 +19,6 @@ profile postgres flags=(attach_disconnected,mediate_deleted,complain) {
   /etc/cont-finish.d/** rwix,
   /run/{,**} rwk,
   /dev/tty rw,
-
-  # PostgreSQL
-  /{,var/}run/postgresql/** rw,
 
   # Access to options.json and other files within your addon
   /data/** rw,
