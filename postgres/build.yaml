@@ -13,3 +13,6 @@ labels:
   org.opencontainers.image.description: "PostgreSQL database addon"
   org.opencontainers.image.source: "https://github.com/ezlo-picori/addons-postgres"
   org.opencontainers.image.licenses: "MIT License"
+codenotary:
+  signer: ezlo@protonmail.com
+  base_image: notary@home-assistant.io
