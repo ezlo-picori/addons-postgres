@@ -4,7 +4,7 @@ FROM $BUILD_FROM
 
 # Setup base
 RUN apk add --no-cache \
-    postgresql14 && \
+    postgresql14 su-exec && \
     mkdir /run/postgresql && \
     chown postgres:postgres /run/postgresql
 

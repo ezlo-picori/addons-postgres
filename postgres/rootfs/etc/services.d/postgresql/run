@@ -6,9 +6,9 @@ POSTGRES_DATA=/data/databases
 
 bashio::log.info "Current user: $(id)"
 
-su - postgres << EOC
+alias prun='su-exec postgres:postgres'
 
-bashio::log.info "su user: $(id)"
+bashio::log.info "su user: $(prun id)"
 
 # Init database
 if ! bashio::fs.directory_exists "${POSTGRES_DATA}"; then
@@ -39,11 +39,11 @@ POSTGRES_PID=$(head -n 1 ${POSTGRES_DATA}/postmaster.pid)
 # Init databases
 bashio::log.info "Ensure databases exists"
 for database in $(bashio::config "databases"); do
-    if psql ${database} -c '' &> /dev/null; then
+    if psql "${database}" -c '' &> /dev/null; then
       bashio::log.info "Database ${database} already defined"
     else
       bashio::log.info "Create database ${database}"
-      psql -c 'CREATE DATABASE ${database};' 2> /dev/null || true
+      psql -c "CREATE DATABASE ${database};" 2> /dev/null || true
     fi
 done
 
@@ -81,11 +81,9 @@ done
 # Flush privileges
 psql -c "FLUSH PRIVILEGES;" 2> /dev/null || true
 
-EOC
-
 # Register stop
 function stop_postgres() {
-    su - postgres -c "pg_ctl stop -D ${POSTGRES_DATA}"
+    pg_ctl stop -D ${POSTGRES_DATA}
     # Successful exit, avoid wait exit status to propagate
     exit 0
 }
