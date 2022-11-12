@@ -10,6 +10,8 @@ arch:
   - aarch64
   - amd64
 image: "ghcr.io/ezlo-picori/ha-addon-kresus-{arch}"
+ingress: true
+ingress_port: 9876
 init: false
 options:
   postgres_hostname: homeassistant.local
@@ -17,7 +19,7 @@ options:
   postgres_user: kresus
   postgres_password: null
   postgres_database: kresus
-  http_basicauth: "kresus:changeme"
+panel_icon: "mpi:piggy-bank"
 ports:
   9876/tcp: 9876
 ports_description:
@@ -31,4 +33,3 @@ schema:
   http_basicauth: str?
 startup: system
 timeout: 20
-webui: "http://[HOST]:[PORT:9876]/"
