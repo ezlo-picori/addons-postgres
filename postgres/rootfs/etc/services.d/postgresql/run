@@ -53,12 +53,12 @@ for login in $(bashio::config "logins|keys"); do
     USERNAME=$(bashio::config "logins[${login}].username")
     PASSWORD=$(bashio::config "logins[${login}].password")
 
-    if ${PRUN} psql -c "SET PASSWORD FOR '${USERNAME}'@'%' = PASSWORD('${PASSWORD}');" 2> /dev/null; then
-        bashio::log.info "Update user ${USERNAME}"
-    else
+    if ! ${PRUN} psql -U "${USERNAME}" -c '' &> /dev/null; then
         bashio::log.info "Create user ${USERNAME}"
-        ${PRUN} psql -c "CREATE USER '${USERNAME}'@'%' IDENTIFIED BY '${PASSWORD}';" 2> /dev/null || true
+        ${PRUN} psql -c "CREATE USER ${USERNAME};"
     fi
+    bashio::log.info "Set password of user ${USERNAME}"
+    ${PRUN} psql -c "ALTER USER ${USERNAME} WITH PASSWORD '${PASSWORD}';"
 done
 
 # Init rights
@@ -70,11 +70,11 @@ for right in $(bashio::config "rights|keys"); do
     if bashio::config.exists "rights[${right}].privileges"; then
         PRIVILEGES=$(bashio::config "rights[${right}].privileges")
         bashio::log.info "Granting ${PRIVILEGES} to ${USERNAME} on ${DATABASE}"
-        ${PRUN} psql -c "REVOKE ALL PRIVILEGES ON ${DATABASE}.* FROM '${USERNAME}'@'%';" || true
-        ${PRUN} psql -c "GRANT ${PRIVILEGES} ON ${DATABASE}.* TO '${USERNAME}'@'%';" || true
+        ${PRUN} psql -c "REVOKE ALL PRIVILEGES ON ${DATABASE} FROM '${USERNAME}';" || true
+        ${PRUN} psql -c "GRANT ${PRIVILEGES} ON ${DATABASE} TO '${USERNAME}';" || true
     else
         bashio::log.info "Granting all privileges to ${USERNAME} on ${DATABASE}"
-        ${PRUN} psql -c "GRANT ALL PRIVILEGES ON ${DATABASE}.* TO '${USERNAME}'@'%';" 2> /dev/null || true
+        ${PRUN} psql -c "GRANT ALL PRIVILEGES ON ${DATABASE} TO '${USERNAME}';" 2> /dev/null || true
     fi
 done
 
@@ -90,4 +90,5 @@ function stop_postgres() {
 trap "stop_postgres" SIGTERM SIGHUP
 
 # Wait for process to end
+bashio::log.info "Wait for process termination..."
 while test -d "/proc/${POSTGRES_PID}" 2> /dev/null; do sleep 1; done
