@@ -17,7 +17,7 @@ if ! bashio::fs.directory_exists "${POSTGRES_DATA}"; then
       --data-checksums \
       -D ${POSTGRES_DATA} > /dev/null
     echo "host all all 0.0.0.0/0 scram-sha-256" >> ${POSTGRES_DATA}/pg_hba.conf
-    echo "list_addresses='*'" >> ${POSTGRES_DATA}/postgresql.conf
+    echo "listen_addresses='*'" >> ${POSTGRES_DATA}/postgresql.conf
 else
     bashio::log.info "Using existing postgres initial system"
     bashio::log.info "Checking data integrity"
