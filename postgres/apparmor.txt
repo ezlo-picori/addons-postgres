@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-profile example flags=(attach_disconnected,mediate_deleted,complain) {
+profile postgres flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
 
   # Capabilities
@@ -47,5 +47,12 @@ profile example flags=(attach_disconnected,mediate_deleted,complain) {
     /{,var/}run/postgresql/** rw,
 
     owner @{PROC}/[0-9]*/oom_adj rw,
+  }
+
+  /sbin/su-exec {
+    #include <abstractions/base>
+
+    capability setgid,
+    capability setuid,
   }
 }
