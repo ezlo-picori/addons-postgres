@@ -6,6 +6,7 @@ profile postgres flags=(attach_disconnected,mediate_deleted,complain) {
   # Capabilities
   file,
   signal (send) set=(kill,term,int,hup,cont),
+  capability chown,
 
   # S6-Overlay
   /init ix,
@@ -26,35 +27,36 @@ profile postgres flags=(attach_disconnected,mediate_deleted,complain) {
   # Access to options.json and other files within your addon
   /data/** rw,
 
-  # PostgreSQL binaries
-  /usr/bin/initdb cx -> initdb,
-  /usr/bin/psql cx -> psql,
-
   /sbin/su-exec cx -> suexec,
 
-  profile initdb=(attach_disconnected,mediate_deleted) {
-    #include <abstractions/base>
-
-    /data/databases/** rw,
-  }
-
-  profile psql=(attach_disconnected,mediate_deleted) {
-    #include <abstractions/base>
-    #include <abstractions/nameservice>
-    #include <abstractions/ssl_keys>
-
-    /etc/postgresql/** r,
-    /usr/share/postgresql/** r,
-    /var/lib/postgresql/** rwl,
-    /{,var/}run/postgresql/** rw,
-
-    owner @{PROC}/[0-9]*/oom_adj rw,
-  }
-
-  profile suexec=(attach_disconnected,mediate_deleted) {
+  profile suexec=(attach_disconnected,mediate_deleted,complain) {
     #include <abstractions/base>
 
     capability setgid,
     capability setuid,
+
+    # PostgreSQL binaries
+    /usr/bin/initdb cx -> initdb,
+    /usr/bin/psql cx -> psql,
+
+    profile initdb=(attach_disconnected,mediate_deleted,complain) {
+      #include <abstractions/base>
+
+      /data/databases/** rw,
+    }
+
+    profile psql=(attach_disconnected,mediate_deleted,complain) {
+      #include <abstractions/base>
+      #include <abstractions/nameservice>
+      #include <abstractions/ssl_keys>
+
+      /etc/postgresql/** r,
+      /usr/share/postgresql/** r,
+      /var/lib/postgresql/** rwl,
+      /{,var/}run/postgresql/** rw,
+
+      owner @{PROC}/[0-9]*/oom_adj rw,
+    }
+
   }
 }
