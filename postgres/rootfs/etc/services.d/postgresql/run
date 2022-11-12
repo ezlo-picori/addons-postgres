@@ -6,14 +6,12 @@ POSTGRES_DATA=/data/databases
 
 bashio::log.info "Current user: $(id)"
 
-alias prun='su-exec postgres:postgres'
-
-bashio::log.info "su user: $(prun id)"
+bashio::log.info "su-exec test: $(su-exec postgres:postgres id)"
 
 # Init database
 if ! bashio::fs.directory_exists "${POSTGRES_DATA}"; then
     bashio::log.info "Create a new postgres initial system"
-    initdb \
+    su-exec postgres:postgres initdb \
       --data-checksums \
       -D ${POSTGRES_DATA} > /dev/null
     echo "host all all 0.0.0.0/0 scram-sha-256" >> ${POSTGRES_DATA}/pg_hba.conf
@@ -21,15 +19,15 @@ if ! bashio::fs.directory_exists "${POSTGRES_DATA}"; then
 else
     bashio::log.info "Using existing postgres initial system"
     bashio::log.info "Checking data integrity"
-    pg_checksums -D ${POSTGRES_DATA} --check
+    su-exec postgres:postgres pg_checksums -D ${POSTGRES_DATA} --check
 fi
 
 # Start PostgreSQL
 bashio::log.info "Starting PostgreSQL"
-pg_ctl start -D ${POSTGRES_DATA}
+su-exec postgres:postgres pg_ctl start -D ${POSTGRES_DATA}
 
 # Wait until DB is running
-while ! psql -c '' 2> /dev/null; do
+while ! su-exec postgres:postgres psql -c '' 2> /dev/null; do
   sleep 1
 done
 
@@ -39,11 +37,11 @@ POSTGRES_PID=$(head -n 1 ${POSTGRES_DATA}/postmaster.pid)
 # Init databases
 bashio::log.info "Ensure databases exists"
 for database in $(bashio::config "databases"); do
-    if psql "${database}" -c '' &> /dev/null; then
+    if su-exec postgres:postgres psql "${database}" -c '' &> /dev/null; then
       bashio::log.info "Database ${database} already defined"
     else
       bashio::log.info "Create database ${database}"
-      psql -c "CREATE DATABASE ${database};" 2> /dev/null || true
+      su-exec postgres:postgres psql -c "CREATE DATABASE ${database};" 2> /dev/null || true
     fi
 done
 
@@ -53,11 +51,11 @@ for login in $(bashio::config "logins|keys"); do
     USERNAME=$(bashio::config "logins[${login}].username")
     PASSWORD=$(bashio::config "logins[${login}].password")
 
-    if psql -c "SET PASSWORD FOR '${USERNAME}'@'%' = PASSWORD('${PASSWORD}');" 2> /dev/null; then
+    if su-exec postgres:postgres psql -c "SET PASSWORD FOR '${USERNAME}'@'%' = PASSWORD('${PASSWORD}');" 2> /dev/null; then
         bashio::log.info "Update user ${USERNAME}"
     else
         bashio::log.info "Create user ${USERNAME}"
-        psql -c "CREATE USER '${USERNAME}'@'%' IDENTIFIED BY '${PASSWORD}';" 2> /dev/null || true
+        su-exec postgres:postgres psql -c "CREATE USER '${USERNAME}'@'%' IDENTIFIED BY '${PASSWORD}';" 2> /dev/null || true
     fi
 done
 
@@ -70,20 +68,20 @@ for right in $(bashio::config "rights|keys"); do
     if bashio::config.exists "rights[${right}].privileges"; then
         PRIVILEGES=$(bashio::config "rights[${right}].privileges")
         bashio::log.info "Granting ${PRIVILEGES} to ${USERNAME} on ${DATABASE}"
-        psql -c "REVOKE ALL PRIVILEGES ON ${DATABASE}.* FROM '${USERNAME}'@'%';" || true
-        psql -c "GRANT ${PRIVILEGES} ON ${DATABASE}.* TO '${USERNAME}'@'%';" || true
+        su-exec postgres:postgres psql -c "REVOKE ALL PRIVILEGES ON ${DATABASE}.* FROM '${USERNAME}'@'%';" || true
+        su-exec postgres:postgres psql -c "GRANT ${PRIVILEGES} ON ${DATABASE}.* TO '${USERNAME}'@'%';" || true
     else
         bashio::log.info "Granting all privileges to ${USERNAME} on ${DATABASE}"
-        psql -c "GRANT ALL PRIVILEGES ON ${DATABASE}.* TO '${USERNAME}'@'%';" 2> /dev/null || true
+        su-exec postgres:postgres psql -c "GRANT ALL PRIVILEGES ON ${DATABASE}.* TO '${USERNAME}'@'%';" 2> /dev/null || true
     fi
 done
 
 # Flush privileges
-psql -c "FLUSH PRIVILEGES;" 2> /dev/null || true
+su-exec postgres:postgres psql -c "FLUSH PRIVILEGES;" 2> /dev/null || true
 
 # Register stop
 function stop_postgres() {
-    pg_ctl stop -D ${POSTGRES_DATA}
+    su-exec postgres:postgres pg_ctl stop -D ${POSTGRES_DATA}
     # Successful exit, avoid wait exit status to propagate
     exit 0
 }
