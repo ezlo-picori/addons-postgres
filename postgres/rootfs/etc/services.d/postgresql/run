@@ -6,6 +6,9 @@ POSTGRES_DATA=/data/databases
 
 function run_as() { cat - | su - postgres; }
 
+bashio::log.info "Current user: $(id)"
+bashio::log.info "run_as user: $(echo 'id' | run_as )"
+
 # Init database
 if ! bashio::fs.directory_exists "${POSTGRES_DATA}"; then
     bashio::log.info "Create a new postgres initial system"
