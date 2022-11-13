@@ -1,5 +1,5 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
-version: "0.2.4"
+version: "0.2.5"
 slug: kresus
 name: Kresus
 description: Open source personal accounting management

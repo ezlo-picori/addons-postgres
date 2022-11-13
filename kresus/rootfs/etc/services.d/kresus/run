@@ -29,7 +29,7 @@ bashio::log.info "Done updating Woob dependencies."
 
 # Basic Kresus options
 PORT="$(bashio::addon.ingress_port)"
-HOST="$(bashio::addon.ip_address)"
+HOST="0.0.0.0/0"
 KRESUS_URL_PREFIX="$(bashio::addon.ingress_entry)"
 export PORT HOST KRESUS_URL_PREFIX
 
