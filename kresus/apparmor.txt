@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-profile f0c04bcf_kresus flags=(attach_disconnected,mediate_deleted) {
+profile kresus flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
 
   # Capabilities
@@ -35,6 +35,7 @@ profile f0c04bcf_kresus flags=(attach_disconnected,mediate_deleted) {
 
     /etc/group r,
     /etc/hosts r,
+    /etc/kresus/** r,
     /etc/os-release r,
     /etc/passwd r,
     /etc/resolv.conf r,
@@ -46,10 +47,14 @@ profile f0c04bcf_kresus flags=(attach_disconnected,mediate_deleted) {
     /woob/** lrw,
 
     /usr/bin/git ix,
+    /usr/bin/gpgv ix,
+    /usr/bin/node ix,
     /usr/bin/python3.10 ix,
     /usr/bin/pip3 rix,
     /usr/libexec/git-core/** ix,
-    /usr/share/git-core/** r,
+    /usr/local/lib/node_modules/** rm,
+    /usr/local/lib/node_modules/kresus/bin/kresus.js rix,
+    /usr/share/** r,
 
   }
 }
