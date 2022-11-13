@@ -1,5 +1,5 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
-version: "0.2.5"
+version: "0.2.6"
 slug: kresus
 name: Kresus
 description: Open source personal accounting management
@@ -11,8 +11,8 @@ arch:
   - amd64
   - i386
 image: "ghcr.io/ezlo-picori/ha-addon-kresus-{arch}"
-ingress: true
-ingress_port: 9876
+ingress: false
+# ingress_port: 9876
 init: false
 options:
   postgres_hostname: homeassistant.local
