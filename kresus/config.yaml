@@ -11,8 +11,6 @@ arch:
   - amd64
   - i386
 image: "ghcr.io/ezlo-picori/ha-addon-kresus-{arch}"
-ingress: false
-# ingress_port: 9876
 init: false
 options:
   postgres_hostname: homeassistant.local
