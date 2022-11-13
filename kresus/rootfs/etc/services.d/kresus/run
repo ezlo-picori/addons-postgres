@@ -25,14 +25,6 @@ ${KRUN} pip3 install -r /tmp/requirements.txt
 rm -f /tmp/requirements.txt
 bashio::log.info "Done updating Woob dependencies."
 
-
-# ==============================================================================
-# Fixing permissions
-# ==============================================================================
-chown ${KRESUS_USER}:${KRESUS_USER} ${KRESUS_INI_FILE}
-chmod 0400 ${KRESUS_INI_FILE}
-chmod 755 "$(dirname ${KRESUS_INI_FILE})"
-
 # ==============================================================================
 # Set-up environment variables
 # ==============================================================================

@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-profile kresus flags=(attach_disconnected,mediate_deleted,complain) {
+profile f0c04bcf_kresus flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
 
   # Capabilities
@@ -23,21 +23,33 @@ profile kresus flags=(attach_disconnected,mediate_deleted,complain) {
   # Access to options.json and other files within your addon
   /data/** rw,
 
-  # Woob
-  /woob/** rw,
-  /tmp/requirements.txt rw,
-
-  # Kresus
-  /usr/local/bin/kresus cx,
-
   /sbin/su-exec cx,
 
-  profile /usr/local/bin/kresus {
-
-  }
-
-  profile /sbin/su-exec {
+  profile /sbin/su-exec flags=(attach_disconnected,mediate_deleted) {
+    #include <abstractions/base>
     capability setgid,
     capability setuid,
+
+    /dev/null r,
+    /sbin/su-exec rm,
+
+    /etc/group r,
+    /etc/hosts r,
+    /etc/os-release r,
+    /etc/passwd r,
+    /etc/resolv.conf r,
+    /etc/ssl/** r,
+
+    /home/kresus/** rw,
+    /tmp/requirements.txt rw,
+    /woob/ r,
+    /woob/** lrw,
+
+    /usr/bin/git ix,
+    /usr/bin/python3.10 ix,
+    /usr/bin/pip3 rix,
+    /usr/libexec/git-core/** ix,
+    /usr/share/git-core/** r,
+
   }
 }

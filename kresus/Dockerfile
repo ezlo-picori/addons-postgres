@@ -2,6 +2,9 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
+# Copy root filesystem
+COPY rootfs /
+
 # Setup base
 RUN apk add --no-cache \
         gcc g++ git gpgv pwgen python3 py3-babel py3-cssselect \
@@ -12,9 +15,9 @@ RUN apk add --no-cache \
     addgroup kresus && \
     adduser -G kresus -D -h /home/kresus kresus && \
     mkdir -p /woob && \
-    chown kresus:kresus /woob
-
-# Copy root filesystem
-COPY rootfs /
+    chown kresus:kresus /woob && \
+    chown -R kresus:kresus /etc/kresus && \
+    chmod 0400 /etc/kresus/config.ini && \
+    chmod 0755 /etc/kresus
 
 WORKDIR /
