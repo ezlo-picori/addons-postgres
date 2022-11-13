@@ -10,13 +10,6 @@ KRUN="su-exec ${KRESUS_USER}:${KRESUS_USER}"
 # ==============================================================================
 cd "${WOOB_DIR}" || bashio::exit.nok
 
-bashio::log.warning "=== TEST ==="
-bashio::log.info "ingress_entry: $(bashio::addon.ingress_entry)"
-bashio::log.info "ingress_url: $(bashio::addon.ingress_url)"
-bashio::log.info "ingress_port: $(bashio::addon.ingress_port)"
-bashio::log.info "ip_address: $(bashio::addon.ip_address)"
-bashio::log.warning "=== END TEST ==="
-
 if ! bashio::fs.directory_exists "${WOOB_DIR}/.git"; then
     bashio::log.info "Installing woob..."
     ${KRUN} git clone --depth 1 https://gitlab.com/woob/woob.git . || (bashio::log.error "Couldn't install woob" && bashio::exit.nok)
@@ -35,8 +28,11 @@ bashio::log.info "Done updating Woob dependencies."
 # ==============================================================================
 
 # Basic Kresus options
-export PORT=9876
-export HOST=0.0.0.0
+PORT="$(bashio::addon.ingress_port)"
+HOST="$(bashio::addon.ip_address)"
+KRESUS_URL_PREFIX="$(bashio::addon.ingress_entry)"
+export PORT HOST KRESUS_URL_PREFIX
+
 export KRESUS_PYTHON_EXEC=python3
 export KRESUS_WOOB_DIR="${WOOB_DIR}"
 
