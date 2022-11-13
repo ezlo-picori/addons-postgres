@@ -8,11 +8,11 @@ KRUN="su-exec ${KRESUS_USER}:${KRESUS_USER}"
 # ==============================================================================
 # Pull latest Woob version
 # ==============================================================================
-cd "${WOOB_DIR}"
+cd "${WOOB_DIR}" || bashio::exit.nok
 
 if ! bashio::fs.directory_exists "${WOOB_DIR}/.git"; then
     bashio::log.info "Installing woob..."
-    ${KRUN} git clone --depth 1 https://gitlab.com/woob/woob.git .
+    ${KRUN} git clone --depth 1 https://gitlab.com/woob/woob.git . || (bashio::log.error "Couldn't install woob" && bashio::exit.nok)
     bashio::log.info "Done installing woob."
 else
     bashio::log.info "Updating woob..."
@@ -20,9 +20,7 @@ else
 fi
 
 bashio::log.info "Updating Woob dependencies..."
-${KRUN} python3 ./setup.py requirements > /tmp/requirements.txt
-${KRUN} pip3 install -r /tmp/requirements.txt
-rm -f /tmp/requirements.txt
+${KRUN} pip3 install $(${KRUN} python3 ./setup.py requirements)
 bashio::log.info "Done updating Woob dependencies."
 
 # ==============================================================================

@@ -42,7 +42,6 @@ profile kresus flags=(attach_disconnected,mediate_deleted) {
     /etc/ssl/** r,
 
     /home/kresus/** rw,
-    /tmp/requirements.txt rw,
     /woob/ r,
     /woob/** lrw,
 
