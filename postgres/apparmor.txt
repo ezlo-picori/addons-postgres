@@ -27,29 +27,19 @@ profile postgres flags=(attach_disconnected,mediate_deleted,complain) {
   # Access to options.json and other files within your addon
   /data/** rw,
 
-  /sbin/su-exec cx -> suexec,
+  /sbin/su-exec cx,
 
-  profile suexec=(attach_disconnected,mediate_deleted,complain) {
+  profile /sbin/su-exec flags=(attach_disconnected,mediate_deleted,complain) {
     #include <abstractions/base>
+    #include <abstractions/nameservice>
+    #include <abstractions/ssl_keys>
 
     capability setgid,
     capability setuid,
 
-    # PostgreSQL binaries
-    /usr/bin/initdb cx -> initdb,
-    /usr/bin/psql cx -> psql,
-  }
-
-  profile initdb=(attach_disconnected,mediate_deleted,complain) {
-    #include <abstractions/base>
-
     /data/databases/** rw,
-  }
-
-  profile psql=(attach_disconnected,mediate_deleted,complain) {
-    #include <abstractions/base>
-    #include <abstractions/nameservice>
-    #include <abstractions/ssl_keys>
+    /usr/bin/initdb ix,
+    /usr/bin/psql ix,
 
     /etc/postgresql/** r,
     /usr/share/postgresql/** r,
