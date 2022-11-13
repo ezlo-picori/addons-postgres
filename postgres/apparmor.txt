@@ -22,14 +22,14 @@ profile postgres flags=(attach_disconnected,mediate_deleted,complain) {
   /dev/tty rw,
 
   # PostgreSQL
-  /{,var/}run/postgresql/** rw,
+  #/{,var/}run/postgresql/** rw,
 
   # Access to options.json and other files within your addon
   /data/** rw,
 
   /sbin/su-exec cx,
 
-  profile /sbin/su-exec flags=(attach_disconnected,mediate_deleted,complain) {
+  profile /sbin/su-exec flags=(attach_disconnected,mediate_deleted) {
     #include <abstractions/base>
     #include <abstractions/nameservice>
     #include <abstractions/ssl_keys>
@@ -37,16 +37,22 @@ profile postgres flags=(attach_disconnected,mediate_deleted,complain) {
     capability setgid,
     capability setuid,
 
-    /data/databases/** rw,
+    /sbin/su-exec rm,
+
+    /bin/busybox ix,
     /usr/bin/initdb ix,
     /usr/bin/psql ix,
+    /usr/libexec/postgresql14/** ix,
 
     /etc/postgresql/** r,
-    /usr/share/postgresql/** r,
+    /usr/share/** r,
     /var/lib/postgresql/** rwl,
     /{,var/}run/postgresql/** rw,
 
     owner @{PROC}/[0-9]*/oom_adj rw,
-  }
 
+    /data/databases/ rw,
+    /data/databases/** rwl,
+    /dev/shm/PostgreSQL.[0-9]* rw,
+  }
 }
