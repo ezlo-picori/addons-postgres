@@ -1,5 +1,5 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
-version: "0.1.4"
+version: "0.1.5"
 slug: kresus
 name: Kresus
 description: Open source personal accounting management
@@ -20,7 +20,7 @@ options:
   postgres_user: kresus
   postgres_password: null
   postgres_database: kresus
-panel_icon: "mpi:piggy-bank"
+panel_icon: mdi:piggy-bank-outline
 ports:
   9876/tcp: 9876
 ports_description:
