@@ -23,11 +23,20 @@ profile kresus flags=(attach_disconnected,mediate_deleted,complain) {
   # Access to options.json and other files within your addon
   /data/** rw,
 
-  /sbin/su-exec cx -> suexec,
+  # Woob
+  /woob/** rw,
+  /tmp/requirements.txt rw,
 
-  profile suexec=(attach_disconnected,mediate_deleted) {
-    #include <abstractions/base>
+  # Kresus
+  /usr/local/bin/kresus cx,
 
+  /sbin/su-exec cx,
+
+  profile /usr/local/bin/kresus {
+
+  }
+
+  profile /sbin/su-exec {
     capability setgid,
     capability setuid,
   }

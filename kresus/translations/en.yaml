@@ -14,7 +14,7 @@ configuration:
   postgres_password:
     name: "DB password"
     description: >-
-      Password of the database user .
+      Password of the database user.
   postgres_database:
     name: "DB database"
     description: >-
